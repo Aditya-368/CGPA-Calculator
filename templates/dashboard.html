@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <div class="card dashboard-card">
+        <div class="card-header">
+            <h2>Your Dashboard</h2>
+        </div>
+        <div class="card-body">
+            <p class="cgpa-display">Your Current CGPA: <strong>{{ "%.2f" % cgpa if cgpa is not none else 'N/A' }}</strong></p>
+            <p class="dashboard-links">Manage your <a href="{{ url_for('courses') }}">courses here</a>.</p>
+            <p class="dashboard-links">Define your <a href="{{ url_for('grading_system') }}">grading system here</a>.</p>
+        </div>
+    </div>
+{% endblock %}

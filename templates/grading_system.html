@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}My Grading System{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            <h2>My Custom Grading System</h2>
+        </div>
+        <div class="card-body">
+            <h3 class="card-subtitle">Add / Update Grade Mapping</h3>
+            <form method="post" class="form-grid">
+                <input type="hidden" name="action" value="add_or_update">
+                <div class="form-group">
+                    <label for="grade_letter">Grade Letter:</label>
+                    <input type="text" id="grade_letter" name="grade_letter" placeholder="e.g., A+, B" required>
+                </div>
+                <div class="form-group">
+                    <label for="grade_point">Grade Point (e.g., 4.0, 3.3):</label>
+                    <input type="number" id="grade_point" name="grade_point" step="0.1" min="0" required>
+                </div>
+                <div class="form-group-full">
+                    <button type="submit" class="btn btn-primary">Add / Update Grade</button>
+                </div>
+            </form>
+
+            {% if grading_system_list %}
+                <h3 class="card-subtitle mt-20">Current Grade Mappings</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Grade Letter</th>
+                            <th>Grade Point</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for grade in grading_system_list %}
+                            <tr>
+                                <td>{{ grade.grade_letter }}</td>
+                                <td>{{ "%.1f" % grade.grade_point }}</td>
+                                <td>
+                                    <form action="{{ url_for('grading_system') }}" method="post" style="display:inline;">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="grade_id" value="{{ grade.id }}">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>You haven't defined any custom grade mappings yet. Use the form above to add some!</p>
+                <p>A default grading system was loaded upon registration, but you can override it or add more here.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

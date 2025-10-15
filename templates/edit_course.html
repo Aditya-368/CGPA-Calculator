@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Course{% endblock %}
+
+{% block content %}
+    <h2>Edit Course: {{ course.name }}</h2>
+
+    <form method="post">
+        <label for="name">Course Name:</label>
+        <input type="text" id="name" name="name" value="{{ course.name }}" required>
+
+        <label for="credits">Credits:</label>
+        <input type="number" id="credits" name="credits" step="0.5" min="0.5" value="{{ course.credits }}" required>
+
+        <label>Calculation Method:</label><br>
+        <input type="radio" id="edit_method_final_grade" name="calculation_method" value="final_grade" 
+               {% if course.calculation_method == 'final_grade' %}checked{% endif %}>
+        <label for="edit_method_final_grade">Enter Final Grade</label><br>
+        <input type="radio" id="edit_method_components" name="calculation_method" value="components" 
+               {% if course.calculation_method == 'components' %}checked{% endif %}>
+        <label for="edit_method_components">Use Components (Assignments, Midterms, etc.)</label>
+        <br><br>
+
+        <div id="edit_final_grade_input_section">
+            <label for="grade_letter">Final Grade:</label>
+            <select id="grade_letter" name="grade_letter">
+                {% if available_grades %}
+                    {% for grade in available_grades %}
+                        <option value="{{ grade }}" 
+                                {% if grade == course.final_grade_letter %}selected{% endif %}>
+                            {{ grade }}
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="">No grades defined. Please go to <a href="{{ url_for('grading_system') }}">Grading System</a> to add some!</option>
+                {% endif %}
+            </select>
+        </div>
+        <br>
+        <button type="submit">Update Course</button>
+    </form>
+    
+    {% if course.calculation_method == 'components' %}
+        <p><a href="{{ url_for('manage_components', course_id=course.id) }}" class="manage-components-btn">Manage Components for this course</a></p>
+    {% endif %}
+
+    <p><a href="{{ url_for('courses') }}">Back to Courses</a></p>
+
+    {# JavaScript to toggle final_grade_input_section based on radio button selection #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const methodFinalGrade = document.getElementById('edit_method_final_grade');
+            const methodComponents = document.getElementById('edit_method_components');
+            const finalGradeInputSection = document.getElementById('edit_final_grade_input_section');
+
+            function toggleFinalGradeInput() {
+                if (methodFinalGrade.checked) {
+                    finalGradeInputSection.style.display = 'block';
+                    finalGradeInputSection.querySelector('select').setAttribute('required', 'true');
+                } else {
+                    finalGradeInputSection.style.display = 'none';
+                    finalGradeInputSection.querySelector('select').removeAttribute('required');
+                }
+            }
+
+            // Initial call on page load
+            toggleFinalGradeInput();
+
+            // Add event listeners
+            methodFinalGrade.addEventListener('change', toggleFinalGradeInput);
+            methodComponents.addEventListener('change', toggleFinalGradeInput);
+        });
+    </script>
+{% endblock %}

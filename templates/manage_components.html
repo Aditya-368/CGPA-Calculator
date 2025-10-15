@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Components for {{ course.name }}{% endblock %}
+
+{% block content %}
+    <h2>Manage Components for "{{ course.name }}" ({{ "%.1f" % course.credits }} Credits)</h2>
+
+    <p>Current Course Grade (from Components): 
+        <strong>{{ calculated_grade_letter if calculated_grade_letter is not none else 'N/A' }} 
+        {% if calculated_grade_point is not none %}({{ "%.2f" % calculated_grade_point }}){% endif %}
+        {% if calculated_percentage is not none %} - {{ "%.1f" % calculated_percentage }}%{% endif %}
+        </strong>
+    </p>
+    <p>This course's calculation method is now **Component-Based**.</p>
+
+    <h3>Add / Update Component</h3>
+    <form method="post">
+        <input type="hidden" name="action" value="add_or_update">
+        <label for="name">Component Name:</label>
+        <input type="text" id="name" name="name" required placeholder="e.g., Midterm, Assignment 1">
+
+        <label for="weight">Weight (% of total course grade):</label>
+        <input type="number" id="weight" name="weight" step="0.1" min="0.1" max="100" required placeholder="e.g., 20, 30.5">
+
+        <label for="score">Your Score:</label>
+        <input type="number" id="score" name="score" step="0.1" min="0" placeholder="e.g., 85, 92.5 (leave empty if not scored yet)">
+        
+        <label for="max_score">Max Score (Default 100):</label>
+        <input type="number" id="max_score" name="max_score" step="0.1" min="1" value="100" placeholder="e.g., 100, 50">
+
+
+        <button type="submit">Add Component</button>
+    </form>
+
+    {% if components %}
+        <h3>Current Components</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Component Name</th>
+                    <th>Weight (%)</th>
+                    <th>Score</th>
+                    <th>Max Score</th>
+                    <th>Contribution (%)</th> {# New column #}
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set total_weight_sum = 0 %}
+                {% for comp in components %}
+                    {% set total_weight_sum = total_weight_sum + comp.weight %}
+                    <tr>
+                        <td>{{ comp.name }}</td>
+                        <td>{{ "%.1f" % comp.weight }}</td>
+                        <td>{{ "%.1f" % comp.score if comp.score is not none else 'N/A' }}</td>
+                        <td>{{ "%.1f" % comp.max_score if comp.max_score is not none else '100.0' }}</td>
+                        <td>
+                            {% if comp.score is not none and comp.max_score is not none and comp.max_score > 0 %}
+                                {{ "%.1f" % ((comp.score / comp.max_score) * comp.weight) }}%
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {# Simple edit: just link to re-add, or for full edit, create a separate modal/form. #}
+                            {# For now, delete form. Full edit would require pre-populating fields. #}
+                            <form action="{{ url_for('delete_component', component_id=comp.id) }}" method="post" style="display:inline;">
+                                <button type="submit" class="delete-btn">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="1"><strong>Total Weight Defined:</strong></td>
+                    <td><strong>{{ "%.1f" % total_weight_sum }}%</strong></td>
+                    <td colspan="4"></td>
+                </tr>
+            </tfoot>
+        </table>
+    {% else %}
+        <p>No components added for this course yet. Use the form above to add some.</p>
+    {% endif %}
+
+    <p><a href="{{ url_for('courses') }}">Back to Courses</a></p>
+{% endblock %}
